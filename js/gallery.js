@@ -99,17 +99,16 @@ function onGalleryClick(event) {
 function openModal(largeImageUrl) {
   const instance = basicLightbox.create(`
     <img src="${largeImageUrl}" width="800" height="600">
-  `);
+  `, {
+    onShow: (instance) => {
+      document.addEventListener('keydown', onKeyPress);
+    },
+    onClose: (instance) => {
+      document.removeEventListener('keydown', onKeyPress);
+    },
+  });
 
   instance.show();
-
-  const closeHandler = () => {
-    instance.close();
-    document.removeEventListener('keydown', onKeyPress);
-  };
-
-  instance.element().querySelector('.basicLightbox__placeholder').addEventListener('click', closeHandler);
-  document.addEventListener('keydown', onKeyPress);
 }
 
 function onKeyPress(event) {
@@ -121,9 +120,5 @@ function onKeyPress(event) {
 }
 
 function closeModal() {
-  const instance = basicLightbox.instance();
-  if (instance.visible()) {
-    instance.close();
-    document.removeEventListener('keydown', onKeyPress);
-  }
+  basicLightbox.close();
 }
