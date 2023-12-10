@@ -1,4 +1,4 @@
-'use script'
+'use strict';
 
 const images = [
   {
@@ -66,59 +66,55 @@ const images = [
   },
 ];
 
-const galleryList = document.querySelector('.gallery');
+const gallery = document.querySelector('.gallery');
 
-const galleryItems = images.map(({ preview, original, description }) => `
-  <li class="gallery-item">
-    <a class="gallery-link" href="${original}">
-      <img
-        class="gallery-image"
-        src="${preview}"
-        data-source="${original}"
-        alt="${description}"
-      />
-    </a>
-  </li>
-`).join('');
+function createGalleryItem({ preview, original, description }) {
+  const listItem = document.createElement('li');
+  listItem.classList.add('gallery-item');
 
-galleryList.insertAdjacentHTML('beforeend', galleryItems);
+  const link = document.createElement('a');
+  link.classList.add('gallery-link');
+  link.href = original;
 
-galleryList.addEventListener('click', onGalleryClick);
+  const image = document.createElement('img');
+  image.classList.add('gallery-image');
+  image.src = preview;
+  image.dataset.source = original;
+  image.alt = description;
 
-function onGalleryClick(event) {
-  event.preventDefault();
+  link.appendChild(image);
+  listItem.appendChild(link);
 
-  const target = event.target;
-  if (target.nodeName !== 'IMG') return;
-
-  const largeImageUrl = target.dataset.source;
-
-  openModal(largeImageUrl);
+  return listItem;
 }
 
-function openModal(largeImageUrl) {
+function openModal(source) {
   const instance = basicLightbox.create(`
-    <img src="${largeImageUrl}" width="800" height="600">
-  `, {
-    onShow: (instance) => {
-      document.addEventListener('keydown', onKeyPress);
-    },
-    onClose: (instance) => {
-      document.removeEventListener('keydown', onKeyPress);
-    },
-  });
+    <img src="${source}" width="800" height="600">
+  `);
 
   instance.show();
+
+  const closeOnEscape = (event) => {
+    if (event.key === 'Escape') {
+      instance.close();
+      document.removeEventListener('keydown', closeOnEscape);
+    }
+  };
+
+  document.addEventListener('keydown', closeOnEscape);
 }
 
-function onKeyPress(event) {
-  const isEscapeKey = event.code === 'Escape';
+gallery.addEventListener('click', (event) => {
+  event.preventDefault();
 
-  if (isEscapeKey) {
-    closeModal();
+  if (event.target.nodeName === 'IMG') {
+    const source = event.target.dataset.source;
+    openModal(source);
   }
-}
+});
 
-function closeModal() {
-  basicLightbox.close();
-}
+images.forEach((image) => {
+  const galleryItem = createGalleryItem(image);
+  gallery.appendChild(galleryItem);
+});
