@@ -1,4 +1,4 @@
-'use strict';
+'use script'
 
 const images = [
   {
@@ -102,9 +102,15 @@ function openModal(largeImageUrl) {
   `);
 
   instance.show();
-}
 
-document.addEventListener('keydown', onKeyPress);
+  const closeHandler = () => {
+    instance.close();
+    document.removeEventListener('keydown', onKeyPress);
+  };
+
+  instance.element().querySelector('.basicLightbox__placeholder').addEventListener('click', closeHandler);
+  document.addEventListener('keydown', onKeyPress);
+}
 
 function onKeyPress(event) {
   const isEscapeKey = event.code === 'Escape';
@@ -115,5 +121,9 @@ function onKeyPress(event) {
 }
 
 function closeModal() {
-  basicLightbox.close();
+  const instance = basicLightbox.instance();
+  if (instance.visible()) {
+    instance.close();
+    document.removeEventListener('keydown', onKeyPress);
+  }
 }
